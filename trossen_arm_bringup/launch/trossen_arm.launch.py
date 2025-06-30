@@ -181,6 +181,13 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
+            'ip_address',
+            default_value='192.168.1.2',
+            description='IP address of robot',
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
             'robot_description',
             default_value=Command([
                 FindExecutable(name='xacro'), ' ',
@@ -192,7 +199,8 @@ def generate_launch_description():
                 'use_world_frame:=', LaunchConfiguration('use_world_frame'), ' ',
                 'arm_variant:=', LaunchConfiguration('arm_variant'), ' ',
                 'arm_side:=', LaunchConfiguration('arm_side'), ' ',
-                'ros2_control_hardware_type:=', LaunchConfiguration('ros2_control_hardware_type'),
+                'ros2_control_hardware_type:=', LaunchConfiguration('ros2_control_hardware_type'), ' ',
+                'ip_address:=', LaunchConfiguration('ip_address'), 
             ])
         )
     )
