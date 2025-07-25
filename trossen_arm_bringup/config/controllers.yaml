@@ -88,12 +88,12 @@ controller_manager:
 arm_controller:
   ros__parameters:
     joints:
-      - joint_0
-      - joint_1
-      - joint_2
-      - joint_3
-      - joint_4
-      - joint_5
+      - $(var prefix)joint_0
+      - $(var prefix)joint_1
+      - $(var prefix)joint_2
+      - $(var prefix)joint_3
+      - $(var prefix)joint_4
+      - $(var prefix)joint_5
     command_interfaces:
       - position
     state_interfaces:
@@ -103,7 +103,7 @@ arm_controller:
 gripper_controller:
   ros__parameters:
     joints:
-      - left_carriage_joint
+      - $(var prefix)left_carriage_joint
     command_interfaces:
       - position
     state_interfaces:

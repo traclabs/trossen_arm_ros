@@ -188,6 +188,13 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
+            'prefix',
+            default_value="",
+            description='name',
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
             'robot_description',
             default_value=Command([
                 FindExecutable(name='xacro'), ' ',
@@ -201,6 +208,7 @@ def generate_launch_description():
                 'arm_side:=', LaunchConfiguration('arm_side'), ' ',
                 'ros2_control_hardware_type:=', LaunchConfiguration('ros2_control_hardware_type'), ' ',
                 'ip_address:=', LaunchConfiguration('ip_address'), 
+                'prefix:=', LaunchConfiguration('prefix'),
             ])
         )
     )
