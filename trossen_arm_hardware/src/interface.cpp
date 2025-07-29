@@ -259,7 +259,7 @@ TrossenArmHardwareInterface::on_activate(const rclcpp_lifecycle::State & /*previ
     for (auto mode : modes) {
       msg_modes += std::to_string(static_cast<int8_t>(mode)) + " ";
     }
-    RCLCPP_ERROR(get_logger(), msg_modes.c_str());
+    RCLCPP_ERROR(get_logger(), "%s", msg_modes.c_str());
     return CallbackReturn::ERROR;
   }
 
