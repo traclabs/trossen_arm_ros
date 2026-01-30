@@ -113,11 +113,6 @@ protected:
   const size_t INDEX_STATE_INTERFACE_VELOCITY_ = 1;
   const size_t INDEX_STATE_INTERFACE_EFFORT_ = 2;
 
-  // Logger
-  static rclcpp::Logger get_logger()
-  {
-    return rclcpp::get_logger("trossen_arm_hardware");
-  }
 };
 
 }  // namespace trossen_arm_hardware

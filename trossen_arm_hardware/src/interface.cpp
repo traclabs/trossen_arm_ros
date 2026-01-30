@@ -28,6 +28,12 @@
 
 #include "trossen_arm_hardware/interface.hpp"
 
+namespace
+{
+// Keep a package-specific logger without exposing anything in the public header.
+const rclcpp::Logger LOGGER = rclcpp::get_logger("trossen_arm_hardware");
+}  // namespace
+
 namespace trossen_arm_hardware
 {
 
@@ -44,17 +50,17 @@ TrossenArmHardwareInterface::on_init(const hardware_interface::HardwareInfo & in
   try {
     robot_model_ = trossen_arm::Model(std::stoi(info.hardware_parameters.at("robot_model")));
     RCLCPP_INFO(
-      get_logger(),
+      LOGGER,
       "Parameter 'robot_model' set to '%d'.",
       static_cast<int>(robot_model_));
   } catch (const std::out_of_range & /*e*/) {
     RCLCPP_FATAL(
-      get_logger(),
+      LOGGER,
       "Required parameter 'robot_model' not specified.");
     return CallbackReturn::FAILURE;
   } catch (const std::invalid_argument & /*e*/) {
     RCLCPP_FATAL(
-      get_logger(),
+      LOGGER,
       "Invalid 'robot_model' value specified: '%d'.", static_cast<int>(robot_model_));
     return CallbackReturn::FAILURE;
   }
@@ -63,12 +69,12 @@ TrossenArmHardwareInterface::on_init(const hardware_interface::HardwareInfo & in
   try {
     driver_ip_address_ = info.hardware_parameters.at("ip_address");
     RCLCPP_INFO(
-      get_logger(),
+      LOGGER,
       "Parameter 'ip_address' set to '%s'.",
       driver_ip_address_.c_str());
   } catch (const std::out_of_range & /*e*/) {
     RCLCPP_FATAL(
-      get_logger(),
+      LOGGER,
       "Parameter 'ip_address' not specified. Defaulting to '%s'.",
       DRIVER_IP_ADDRESS_DEFAULT);
     driver_ip_address_ = DRIVER_IP_ADDRESS_DEFAULT;
@@ -86,7 +92,7 @@ TrossenArmHardwareInterface::on_init(const hardware_interface::HardwareInfo & in
     // Only a single command interface per joint is supported for now
     if (joint.command_interfaces.size() != COUNT_COMMAND_INTERFACES_) {
       RCLCPP_ERROR(
-        get_logger(),
+        LOGGER,
         "Joint '%s' has %zu command interfaces found. %zu expected.",
         joint.name.c_str(),
         joint.command_interfaces.size(),
@@ -97,7 +103,7 @@ TrossenArmHardwareInterface::on_init(const hardware_interface::HardwareInfo & in
     // Only position command interface is expected
     if (joint.command_interfaces.at(INDEX_COMMAND_INTERFACE_POSITION_).name != HW_IF_POSITION) {
       RCLCPP_ERROR(
-        get_logger(),
+        LOGGER,
         "Joint '%s' has '%s' command interface found. '%s' expected",
         joint.name.c_str(),
         joint.command_interfaces.at(INDEX_COMMAND_INTERFACE_POSITION_).name.c_str(),
@@ -109,7 +115,7 @@ TrossenArmHardwareInterface::on_init(const hardware_interface::HardwareInfo & in
     // Expect exactly three state interfaces
     if (joint.state_interfaces.size() != COUNT_STATE_INTERFACES_) {
       RCLCPP_ERROR(
-        get_logger(),
+        LOGGER,
         "Joint '%s' has %zu state interfaces found. %zu expected.",
         joint.name.c_str(),
         joint.state_interfaces.size(),
@@ -120,7 +126,7 @@ TrossenArmHardwareInterface::on_init(const hardware_interface::HardwareInfo & in
     // Position first
     if (joint.state_interfaces.at(INDEX_STATE_INTERFACE_POSITION_).name != HW_IF_POSITION) {
       RCLCPP_ERROR(
-        get_logger(),
+        LOGGER,
         "Joint '%s' has '%s' state interface found. '%s' expected",
         joint.name.c_str(),
         joint.state_interfaces.at(INDEX_STATE_INTERFACE_POSITION_).name.c_str(),
@@ -131,7 +137,7 @@ TrossenArmHardwareInterface::on_init(const hardware_interface::HardwareInfo & in
     // Velocity second
     if (joint.state_interfaces.at(INDEX_STATE_INTERFACE_VELOCITY_).name != HW_IF_VELOCITY) {
       RCLCPP_ERROR(
-        get_logger(),
+        LOGGER,
         "Joint '%s' has '%s' state interface found. '%s' expected",
         joint.name.c_str(),
         joint.state_interfaces.at(INDEX_STATE_INTERFACE_VELOCITY_).name.c_str(),
@@ -142,7 +148,7 @@ TrossenArmHardwareInterface::on_init(const hardware_interface::HardwareInfo & in
     // Effort third
     if (joint.state_interfaces.at(INDEX_STATE_INTERFACE_EFFORT_).name != HW_IF_EFFORT) {
       RCLCPP_ERROR(
-        get_logger(),
+        LOGGER,
         "Joint '%s' has '%s' state interface found. '%s' expected",
         joint.name.c_str(),
         joint.state_interfaces.at(INDEX_STATE_INTERFACE_EFFORT_).name.c_str(),
@@ -200,19 +206,19 @@ TrossenArmHardwareInterface::export_command_interfaces()
 CallbackReturn
 TrossenArmHardwareInterface::on_configure(const rclcpp_lifecycle::State & /*previous_state*/)
 {
-  RCLCPP_INFO(get_logger(), "Configuring the Trossen Arm Driver...");
+  RCLCPP_INFO(LOGGER, "Configuring the Trossen Arm Driver...");
   try {
     arm_driver_ = std::make_unique<TrossenArmDriver>();
   } catch (const std::exception & e) {
     RCLCPP_FATAL(
-      get_logger(),
+      LOGGER,
       "Failed to create TrossenArmDriver: %s", e.what());
     return CallbackReturn::ERROR;
   }
 
   if (!arm_driver_) {
     RCLCPP_FATAL(
-      get_logger(),
+      LOGGER,
       "Failed to create TrossenArmDriver.");
     return CallbackReturn::ERROR;
   }
@@ -225,13 +231,13 @@ TrossenArmHardwareInterface::on_configure(const rclcpp_lifecycle::State & /*prev
       true);
   } catch (const std::exception & e) {
     RCLCPP_FATAL(
-      get_logger(),
+      LOGGER,
       "Failed to configure TrossenArmDriver: %s", e.what());
     return CallbackReturn::ERROR;
   }
 
   RCLCPP_INFO(
-    get_logger(),
+    LOGGER,
     "TrossenArmDriver configured with model %d, IP Address '%s'.",
     static_cast<int>(robot_model_),
     driver_ip_address_.c_str());
@@ -259,14 +265,14 @@ TrossenArmHardwareInterface::on_activate(const rclcpp_lifecycle::State & /*previ
     for (auto mode : modes) {
       msg_modes += std::to_string(static_cast<int8_t>(mode)) + " ";
     }
-    RCLCPP_ERROR(get_logger(), "%s", msg_modes.c_str());
+    RCLCPP_ERROR(LOGGER, "%s", msg_modes.c_str());
     return CallbackReturn::ERROR;
   }
 
   // Update the state of the robot
   this->read(rclcpp::Time(0.0), rclcpp::Duration(0, 0));
 
-  RCLCPP_INFO(get_logger(), "TrossenArmDriver enabled.");
+  RCLCPP_INFO(LOGGER, "TrossenArmDriver enabled.");
 
   return CallbackReturn::SUCCESS;
 }
@@ -298,7 +304,7 @@ TrossenArmHardwareInterface::write(
   // If first time writing to the hardware, set all commands to the current positions
   if (first_update_) {
     RCLCPP_DEBUG(
-      get_logger(),
+      LOGGER,
       "First write update. Setting joint position commands to current positions.");
     joint_position_commands_ = joint_positions_;
     first_update_ = false;
@@ -312,7 +318,7 @@ TrossenArmHardwareInterface::write(
       }))
   {
     RCLCPP_ERROR(
-      get_logger(),
+      LOGGER,
       "Commands to the joints contain NaN or INF values.");
     return return_type::ERROR;
   }
@@ -327,7 +333,7 @@ TrossenArmHardwareInterface::on_deactivate(const rclcpp_lifecycle::State & /*pre
 {
   arm_driver_->set_all_modes(trossen_arm::Mode::idle);
 
-  RCLCPP_INFO(get_logger(), "TrossenArmDriver disabled.");
+  RCLCPP_INFO(LOGGER, "TrossenArmDriver disabled.");
 
   return CallbackReturn::SUCCESS;
 }
