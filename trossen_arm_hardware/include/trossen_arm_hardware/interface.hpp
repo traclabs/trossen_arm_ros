@@ -71,7 +71,7 @@ class TrossenArmHardwareInterface : public hardware_interface::SystemInterface
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(TrossenArmHardwareInterface)
 
-  CallbackReturn on_init(const HardwareInfo & info) override;
+  CallbackReturn on_init(const hardware_interface::HardwareComponentInterfaceParams & params) override;
 
   std::vector<StateInterface> export_state_interfaces() override;
 
