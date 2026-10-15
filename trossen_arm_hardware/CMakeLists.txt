@@ -23,6 +23,11 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle)
 
+# libtrossen_arm.a bundles its own urdfdom, tinyxml2 and console_bridge. Hide those symbols so the
+# bundled code binds to its own copies rather than the (ABI-incompatible) system libraries already
+# loaded by ros2_control_node, which otherwise segfaults in urdf::parseURDF during configure.
+target_link_options(${PROJECT_NAME} PRIVATE "LINKER:--exclude-libs,libtrossen_arm.a")
+
 pluginlib_export_plugin_description_file(hardware_interface ${PROJECT_NAME}.xml)
 
 install(
