@@ -34,11 +34,12 @@ namespace trossen_arm_hardware
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
 CallbackReturn
-TrossenArmHardwareInterface::on_init(const hardware_interface::HardwareInfo & info)
+TrossenArmHardwareInterface::on_init(const hardware_interface::HardwareComponentInterfaceParams & params)
 {
-  if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS) {
+  if (hardware_interface::SystemInterface::on_init(params) != CallbackReturn::SUCCESS) {
     return CallbackReturn::ERROR;
   }
+  const auto & info = params.hardware_info;
 
   // Get robot model
   try {
@@ -578,6 +579,11 @@ TrossenArmHardwareInterface::on_cleanup(const rclcpp_lifecycle::State & /*previo
   arm_driver_.reset();
 
   return CallbackReturn::SUCCESS;
+}
+
+rclcpp::Logger TrossenArmHardwareInterface::get_logger() const
+{
+  return rclcpp::get_logger("trossen_arm_hardware");
 }
 
 bool
